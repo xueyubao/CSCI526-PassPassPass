@@ -29,6 +29,7 @@ public class MovableCube : MonoBehaviour
         new Vector3(0, -10, 0),
         new Vector3(10, -10, 0)};
     Boolean[] checkExist;
+
     int rotateAngle;
     int checkAngle = 0;
     public Button leftButton;
@@ -38,19 +39,46 @@ public class MovableCube : MonoBehaviour
         gameObject = GameObject.Find("MovableCube");
     }
 
-    
-    void Update()
+    void FixedUpdate()
     {
-        if (turnRight) 
-        { 
-            
-            gameObject.transform.RotateAround(rotateCenter, Vector3.forward, -1);
+        float interval = Time.fixedDeltaTime;
+        UnityEngine.Debug.Log(Time.fixedDeltaTime);
+        if (turnRight)
+        {
+
+            gameObject.transform.RotateAround(rotateCenter, Vector3.forward, -10 * 50 * interval );
+            checkAngle+=10;
+        }
+        else if (turnLeft)
+        {
+
+            gameObject.transform.RotateAround(rotateCenter, Vector3.forward, 10 * 50 * interval );
+            checkAngle+=10;
+        }
+        if (checkAngle == rotateAngle)
+        {
+            turnRight = false;
+            turnLeft = false;
+            checkAngle = 0;
+            leftButton.interactable = true;
+            rightButton.interactable = true;
+        }
+    }
+
+/*        void Update()
+    {
+        float interval = Time.deltaTime;
+
+        if (turnRight)
+        {
+
+            gameObject.transform.RotateAround(rotateCenter, Vector3.forward, -1 * interval);
             checkAngle++;
         }
         else if (turnLeft)
         {
-            
-            gameObject.transform.RotateAround(rotateCenter, Vector3.forward, 1);
+
+            gameObject.transform.RotateAround(rotateCenter, Vector3.forward, 1 * interval);
             checkAngle++;
         }
         if (checkAngle == rotateAngle)
@@ -62,47 +90,31 @@ public class MovableCube : MonoBehaviour
             rightButton.interactable = true;
         }
 
-    }
+    }*/
 
     Boolean[] GetNear()
     { 
         Boolean[] c = new Boolean[cubeOffset.Length];
-        if (gameObject.transform.position.y > 14)
+        for (int i = 0; i < cubeOffset.Length; i++)
         {
-            
-            for (int i = 0; i < cubeOffset.Length; i++)
+            RaycastHit hit;
+            if (Physics.Raycast(gameObject.transform.position + cubeOffset[i] + new Vector3(0, 0, -10), gameObject.transform.position + cubeOffset[i], out hit, 10))
             {
-                //                ray[i] = new Ray(Vector3.zero, gameObject.transform.position);
-                RaycastHit hit;
-                if (Physics.Raycast(gameObject.transform.position + cubeOffset[i] + new Vector3(0, 0, -10), gameObject.transform.position + cubeOffset[i], out hit, 10))
-                {
-                    /*                    Debug.DrawLine(gameObject.transform.position, hit.point);*/
-                    c[i] = true;
-                }
-                else
-                {
-                    c[i] = false;
-                }
+                c[i] = true;
+            }
+            else
+            {
+                c[i] = false;
             }
         }
-        else
+
+        if (gameObject.transform.position.y <= 14)
         {
-            for (int i = 0; i < cubeOffset.Length - 3; i++)
-            {
-                RaycastHit hit;
-                if (Physics.Raycast(gameObject.transform.position + cubeOffset[i] + new Vector3(0, 0, -10), gameObject.transform.position + cubeOffset[i], out hit, 10))
-                {
-                    c[i] = true;
-                }
-                else
-                {
-                    c[i] = false;
-                }
-            }
             c[5] = true;
             c[6] = true;
             c[7] = true;
         }
+        
         return c;
     }
 
@@ -130,7 +142,8 @@ public class MovableCube : MonoBehaviour
     int[] GetAngle(Boolean isRight)
     {
         int[] a = new int[4];
-        if (isRight)
+
+        if (isRight && gameObject.transform.position.x < 20)
         {
             if (checkExist[1] && !checkExist[0] && !checkExist[3])
             {
@@ -185,7 +198,7 @@ public class MovableCube : MonoBehaviour
             }
 
         }
-        else
+        else if (!isRight && gameObject.transform.position.x > -20)
         {
             if (checkExist[3] && !checkExist[0] && !checkExist[1])
             {
@@ -240,6 +253,13 @@ public class MovableCube : MonoBehaviour
             }
 
         }
+        else
+        {
+            a[0] = 0;
+            a[1] = 0;
+            a[2] = 0;
+            a[3] = 0;
+        }
         return a;
     }
 
@@ -255,14 +275,14 @@ public class MovableCube : MonoBehaviour
             UnityEngine.Debug.Log(checkExist[i]);
         }
             
-        UnityEngine.Debug.Log(GetCenter(GetAngle(true)));
+//        UnityEngine.Debug.Log(GetCenter(GetAngle(true)));
         if (GetCenter(GetAngle(true))==-1)
         {
             leftButton.interactable = true;
             rightButton.interactable = true;
             return;
         } 
-        UnityEngine.Debug.Log(GetAngle(true)[GetCenter(GetAngle(true))]);
+//        UnityEngine.Debug.Log(GetAngle(true)[GetCenter(GetAngle(true))]);
         rotateCenter = gameObject.transform.position + offset[GetCenter(GetAngle(true))];
         rotateAngle = GetAngle(true)[GetCenter(GetAngle(true))];
         turnRight = true;
